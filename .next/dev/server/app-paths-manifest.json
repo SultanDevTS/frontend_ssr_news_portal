@@ -1,0 +1,5 @@
+{
+  "/berita/[slug]/page": "app/berita/[slug]/page.js",
+  "/kategori/[slug]/page": "app/kategori/[slug]/page.js",
+  "/page": "app/page.js"
+}
