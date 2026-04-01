@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 14, "column": 0}, "map": {"version":3,"sources":["file:///D:/sultan/semester%208/Portal-Berita/frontend/app/page.tsx"],"sourcesContent":["export default function Page() {\r\n  return <h1>Hello world</h1>;\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBAAO,8OAAC;kBAAG;;;;;;AACb"}}]
-}
