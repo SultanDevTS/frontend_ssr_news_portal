@@ -19,13 +19,22 @@ export type ArticleCategory = {
 
 export type Article = {
   id: number;
-  tittle: string;
+  title: string;
   author: string;
   slug: string;
   content?: string;
   thumbnail: string;
   category: ArticleCategory;
   publishedAt: string;
+  likes?: number;
+};
+
+export type Comment = {
+  id: number;
+  articleId: number;
+  name: string;
+  content: string;
+  createdAt: string;
 };
 
 export type PaginatedResponse<T> = {
@@ -69,28 +78,37 @@ export function sanitizeContent(html: string): string {
   return sanitize(html, SANITIZE_OPTIONS);
 }
 
-// ── API Functions ─────────────────────────────────────────
+// ── API Functions (Server Component only) ─────────────────
 
 export async function getCategories(): Promise<Category[]> {
-  const res = await fetch(`${BASE_URL}/categories`, {
-    next: { revalidate: 3600 },
-  });
-  if (!res.ok) throw new Error("Gagal mengambil kategori");
-  const json: ApiResponse<Category[]> = await res.json();
-  return json.data;
+  try {
+    const res = await fetch(`${BASE_URL}/categories`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) throw new Error("Gagal mengambil kategori");
+    const json: ApiResponse<Category[]> = await res.json();
+    return json.data || [];
+  } catch (error) {
+    console.error("[API Error] getCategories failed:", error);
+    return [];
+  }
 }
 
 export async function getCategoryBySlug(
   slug: string,
 ): Promise<Category | null> {
-  const res = await fetch(`${BASE_URL}/categories/${slug}`, {
-    next: { revalidate: 3600 },
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/categories/${slug}`, {
+      next: { revalidate: 3600 },
+    });
 
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Gagal mengambil data kategori");
-  const json: ApiResponse<Category> = await res.json();
-  return json.data;
+    if (res.status === 404 || !res.ok) return null;
+    const json: ApiResponse<Category> = await res.json();
+    return json.data;
+  } catch (error) {
+    console.error(`[API Error] getCategoryBySlug(${slug}) failed:`, error);
+    return null;
+  }
 }
 
 // Article
@@ -99,31 +117,85 @@ type ArticleParams = {
   limit?: number;
   search?: string;
   category?: string;
+  sort?: string;
 };
 
 export async function getArticles(
   params: ArticleParams = {},
 ): Promise<PaginatedResponse<Article>> {
-  const query = new URLSearchParams();
-  if (params.page) query.set("page", String(params.page));
-  if (params.limit) query.set("limit", String(params.limit));
-  if (params.search) query.set("search", String(params.search));
-  if (params.category) query.set("category", String(params.category));
+  const emptyResponse: PaginatedResponse<Article> = {
+    success: false,
+    data: [],
+    meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+  };
 
-  const queryString = query.toString();
-  const url = `${BASE_URL}/articles${queryString ? `?${queryString}` : ""}`;
-  const res = await fetch(url, { next: { revalidate: 60 } });
-  if (!res.ok) throw new Error("Gagal mengambil data Article");
-  return res.json();
+  try {
+    const query = new URLSearchParams();
+    if (params.page) query.set("page", String(params.page));
+    if (params.limit) query.set("limit", String(params.limit));
+    if (params.search) query.set("search", String(params.search));
+    if (params.category) query.set("category", String(params.category));
+    if (params.sort) query.set("sort", String(params.sort));
+
+    const queryString = query.toString();
+    const url = `${BASE_URL}/articles${queryString ? `?${queryString}` : ""}`;
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (!res.ok) return emptyResponse;
+    return await res.json();
+  } catch (error) {
+    console.error("[API Error] getArticles failed:", error);
+    return emptyResponse;
+  }
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const res = await fetch(`${BASE_URL}/articles/${slug}`, {
-    next: { revalidate: 60 },
-  });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error("Gagal mengambil detail artikel");
-  const json: ApiResponse<Article> = await res.json();
-  return json.data;
+  try {
+    const res = await fetch(`${BASE_URL}/articles/${slug}`, {
+      next: { revalidate: 60 },
+    });
+    if (res.status === 404 || !res.ok) return null;
+    const json: ApiResponse<Article> = await res.json();
+    return json.data;
+  } catch (error) {
+    console.error(`[API Error] getArticleBySlug(${slug}) failed:`, error);
+    return null;
+  }
 }
 
+// Comments (fetch di Server Component)
+export async function getComments(articleId: number): Promise<Comment[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/comments/${articleId}`, {
+      next: { revalidate: 30 },
+    });
+    if (!res.ok) return [];
+    const json: ApiResponse<Comment[]> = await res.json();
+    return json.data || [];
+  } catch (error) {
+    console.error(
+      `[API Error] getComments(${articleId}) failed:`,
+      error,
+    );
+    return [];
+  }
+}
+
+// Related articles (fetch di Server Component)
+export async function getRelatedArticles(
+  categorySlug: string,
+  excludeSlug: string,
+  limit: number = 3,
+): Promise<Article[]> {
+  try {
+    const res = await getArticles({
+      category: categorySlug,
+      limit: limit + 1, // fetch extra in case current article is included
+    });
+    return res.data
+      .filter((article) => article.slug !== excludeSlug)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("[API Error] getRelatedArticles failed:", error);
+    return [];
+  }
+}

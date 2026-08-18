@@ -1,13 +1,13 @@
-// components/Navbar.tsx — Server Component
+// components/layout/Header.tsx — Server Component
 
 import Link from "next/link";
 import { getCategories } from "@/lib/api";
-import NavbarClient from "@/components/NavbarClient";
+import { MAX_VISIBLE_CATEGORIES } from "@/lib/constants";
+import NavMenu from "@/components/layout/NavMenu";
+import SearchBar from "@/components/layout/SearchBar.client";
+import MobileNav from "@/components/layout/MobileNav.client";
 
-// Maximum categories shown directly in the desktop navbar
-const MAX_VISIBLE_CATEGORIES = 6;
-
-export default async function Navbar() {
+export default async function Header() {
   const categories = await getCategories();
 
   // Deduplicate categories by slug
@@ -45,16 +45,7 @@ export default async function Navbar() {
 
             <span className="w-px h-5 bg-gray-200 mx-1" />
 
-            {visibleCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/kategori/${cat.slug}`}
-                className="px-3 py-2 text-sm font-medium text-gray-500 rounded-lg whitespace-nowrap
-                           hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
-              >
-                {cat.name}
-              </Link>
-            ))}
+            <NavMenu categories={visibleCategories} />
 
             {overflowCategories.length > 0 && (
               <div className="relative group">
@@ -107,29 +98,13 @@ export default async function Navbar() {
 
           {/* Right side: Search + Mobile toggle */}
           <div className="flex items-center gap-2">
-            {/* Search icon (desktop) */}
-            <button
-              className="hidden lg:flex items-center justify-center w-10 h-10 rounded-full
-                         text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-              aria-label="Search"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </button>
+            {/* Desktop search */}
+            <div className="hidden lg:block">
+              <SearchBar />
+            </div>
 
             {/* Mobile menu — Client Component */}
-            <NavbarClient categories={uniqueCategories} />
+            <MobileNav categories={uniqueCategories} />
           </div>
         </div>
       </div>

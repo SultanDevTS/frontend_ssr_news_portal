@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -9,7 +9,7 @@ type Props = {
   categories: Category[];
 };
 
-export default function NavbarClient({ categories }: Props) {
+export default function MobileNav({ categories }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = useCallback(() => setIsOpen(false), []);

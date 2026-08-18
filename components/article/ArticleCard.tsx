@@ -1,24 +1,16 @@
-// components/ArticleCard.tsx
+// components/article/ArticleCard.tsx — Server Component
 
 import Link from "next/link";
 import Image from "next/image";
 import { Article } from "@/lib/api";
-import CategoryBadge from "@/components/CategoryBadge";
+import CategoryBadge from "@/components/article/CategoryBadge";
+import { formatDate } from "@/utils/formatDate";
 
 type Props = {
   article: Article;
 };
 
 export default function ArticleCard({ article }: Props) {
-  const formattedDate = new Date(article.publishedAt).toLocaleDateString(
-    "id-ID",
-    {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    },
-  );
-
   return (
     <article
       className="bg-white rounded-xl overflow-hidden shadow-sm 
@@ -30,7 +22,7 @@ export default function ArticleCard({ article }: Props) {
           {article.thumbnail ? (
             <Image
               src={article.thumbnail}
-              alt={article.tittle}
+              alt={article.title}
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover"
@@ -52,7 +44,7 @@ export default function ArticleCard({ article }: Props) {
             className="font-bold text-gray-900 text-base leading-snug
                          hover:text-blue-600 transition-colors line-clamp-2"
           >
-            {article.tittle}
+            {article.title}
           </h2>
         </Link>
 
@@ -61,7 +53,9 @@ export default function ArticleCard({ article }: Props) {
           <span className="text-gray-500 text-xs font-medium">
             {article.author}
           </span>
-          <span className="text-gray-400 text-xs">{formattedDate}</span>
+          <span className="text-gray-400 text-xs">
+            {formatDate(article.publishedAt)}
+          </span>
         </div>
       </div>
     </article>

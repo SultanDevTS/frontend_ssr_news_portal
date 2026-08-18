@@ -1,9 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import Script from "next/script";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import "./global.css";
 import React from "react";
+
+const ADSENSE_PUB_ID = process.env.NEXT_PUBLIC_ADSENSE_PUB_ID ?? "";
+const isAdSenseConfigured =
+  ADSENSE_PUB_ID.startsWith("ca-pub-") &&
+  ADSENSE_PUB_ID !== "ca-pub-XXXXXXXXXXXXXXXX";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +28,9 @@ export const metadata: Metadata = {
     default: "PortalNews — Berita Terkini & Terpercaya",
   },
   description: "Portal berita terkini dan terpercaya dari berbagai kategori",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+  ),
   alternates: {
     canonical: "/",
   },
@@ -58,8 +66,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className={inter.className}>
+      <head>
+        {/* Google AdSense — hanya load jika Publisher ID sudah dikonfigurasi */}
+        {isAdSenseConfigured && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUB_ID}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
+      </head>
       <body className="bg-gray-50 text-gray-900 antialiased">
-        <Navbar />
+        <Header />
         <main className="min-h-screen">{children}</main>
         <Footer />
       </body>

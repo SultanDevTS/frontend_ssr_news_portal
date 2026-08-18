@@ -9,11 +9,22 @@ const nextConfig: NextConfig = {
         hostname: "localhost",
         port: "3008",
       },
-      // Tambahkan domain production di sini saat deploy
-      // {
-      //   protocol: "https",
-      //   hostname: "api.portalnews.com",
-      // },
+      {
+        protocol: "https",
+        hostname: "awsimages.detik.net.id",
+      },
+      {
+        protocol: "https",
+        hostname: "*.detik.net.id",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
     ],
     // Format modern untuk performa LCP yang lebih baik
     formats: ["image/avif", "image/webp"],

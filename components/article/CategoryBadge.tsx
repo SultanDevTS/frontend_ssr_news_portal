@@ -1,3 +1,5 @@
+// components/article/CategoryBadge.tsx — Server Component
+
 import Link from "next/link";
 import { ArticleCategory } from "@/lib/api";
 
